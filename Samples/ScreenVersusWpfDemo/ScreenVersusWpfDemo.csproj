@@ -105,7 +105,7 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Src\ScreenVersusWpf.csproj">
+    <ProjectReference Include="..\..\Src\ScreenVersusWpf.csproj">
       <Project>{55dbe16d-c08f-458c-b3ce-84aa43b30196}</Project>
       <Name>ScreenVersusWpf</Name>
     </ProjectReference>
