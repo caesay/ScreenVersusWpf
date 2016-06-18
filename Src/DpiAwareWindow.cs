@@ -10,14 +10,42 @@ using System.Windows.Media;
 
 namespace ScreenVersusWpf
 {
+    /// <summary>
+    /// Inheirit this class to create a window that scales appropriately to system dpi changes, and monitors with different DPI's.
+    /// Make sure your manifest entry is correctly set to `<dpiAware>True/PM</dpiAware>` to disable windows dpi virtualization
+    /// </summary>
     public class DpiAwareWindow : Window
     {
+        /// <summary>
+        /// True if this window is actively monitoring the current monitor DPI and adjusting scale accordingly.
+        /// Should be true; If false the current assembly manifest is probably incorrect.
+        /// </summary>
+        public bool IsPerMonitorDpiAware => _perMonitorEnabled;
+
+        /// <summary>
+        /// The current global system dpi. This wont change during the life of the application
+        /// </summary>
+        public Dpi SystemDpi => DpiUtil.SystemDpi;
+
+        /// <summary>
+        /// The current window/WPF dpi. This wont change during the life of the application and should be equal to SystemDpi
+        /// </summary>
+        public Dpi WindowDpi => DpiUtil.GetDpiFromVisual(this);
+
+        /// <summary>
+        /// The Dpi of the current monitor. This is used with SystemDpi to calculate the current scaling factor.
+        /// </summary>
+        public Dpi MonitorDpi => DpiUtil.GetDpiFromWindowMonitor(this);
+
         private HwndSource _handle;
         private Dpi _currentDpi;
         private double _currentScale;
         private readonly bool _perMonitorEnabled;
         private readonly bool _sysEnabled;
 
+        /// <summary>
+        /// Creates a new instance of DpiAwareWindow
+        /// </summary>
         public DpiAwareWindow()
         {
             Loaded += OnLoaded;

@@ -15,11 +15,31 @@ using System.Windows.Media;
 
 namespace ScreenVersusWpf
 {
+    /// <summary>
+    /// A collection of utility methods and properties for retrieving the current system DPI.
+    /// </summary>
     public static class DpiUtil
     {
+        /// <summary>
+        /// Returns true if the current process is currently being virtualized by windows with fake dpi / screen dimentions. 
+        /// </summary>
+        public static bool IsProcessVirtualized => !SystemDpi.Equals(RealDpi);
+
+        /// <summary>
+        /// Equal to the global system DPI. This value only can only change after a system reboot.
+        /// </summary>
         public static readonly Dpi SystemDpi = GetSystemDpi();
+
+        /// <summary>
+        /// Equal to the real DPI, regardless of windows virtualization. 
+        /// This will be equal to the system DPI when the manifest specifies that this process is DPI aware.
+        /// </summary>
         public static readonly Dpi RealDpi = GetRealDpi();
 
+        /// <summary>
+        /// Returns the DPI currently in use by the WPF scaling system to transform this visual.
+        /// This should almost always be equal to the SystemDpi property.
+        /// </summary>
         public static Dpi GetDpiFromVisual(Visual sourceVisual)
         {
             if (sourceVisual == null)
@@ -34,6 +54,9 @@ namespace ScreenVersusWpf
                 (int)(Dpi.Default.DpiY * source.CompositionTarget.TransformToDevice.M22));
         }
 
+        /// <summary>
+        /// Returns the DPI of the monitor currently holding the specified window.
+        /// </summary>
         public static Dpi GetDpiFromWindowMonitor(Window sourceVisual)
         {
             if (sourceVisual == null)
@@ -52,6 +75,9 @@ namespace ScreenVersusWpf
             return GetMonitorDpi(handleMonitor);
         }
 
+        /// <summary>
+        /// Returns the DPI if the monitor currently holding the specified rectangle.
+        /// </summary>
         public static Dpi GetDpiFromRectMonitor(Rect sourceRect)
         {
             if (sourceRect == Rect.Empty)
@@ -73,6 +99,11 @@ namespace ScreenVersusWpf
             return GetMonitorDpi(handleMonitor);
         }
 
+        /// <summary>
+        /// Returns the DPI of the monitor currently holding the windows taskbar notify area.
+        /// This is useful for rendering balloon tips or picking a tray icon resolution.
+        /// </summary>
+        /// <returns></returns>
         public static Dpi GetDpiFromNotifyArea()
         {
             if (!ShcoreAvailable())
@@ -104,7 +135,6 @@ namespace ScreenVersusWpf
         }
 
         #region Internal Methods
-
 
         private static bool? _shcoreCached = null;
         internal static bool ShcoreAvailable()
