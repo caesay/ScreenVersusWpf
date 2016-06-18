@@ -57,7 +57,7 @@ namespace ScreenVersusWpf
         /// <summary>
         /// Returns the DPI of the monitor currently holding the specified window.
         /// </summary>
-        public static Dpi GetDpiFromWindowMonitor(Window sourceVisual)
+        public static Dpi GetDpiFromMonitor(Window sourceVisual)
         {
             if (sourceVisual == null)
                 throw new ArgumentNullException(nameof(sourceVisual));
@@ -78,7 +78,7 @@ namespace ScreenVersusWpf
         /// <summary>
         /// Returns the DPI if the monitor currently holding the specified rectangle.
         /// </summary>
-        public static Dpi GetDpiFromRectMonitor(Rect sourceRect)
+        public static Dpi GetDpiFromMonitor(Rect sourceRect)
         {
             if (sourceRect == Rect.Empty)
                 throw new ArgumentNullException(nameof(sourceRect));
@@ -194,14 +194,9 @@ namespace ScreenVersusWpf
         internal static Dpi GetRealDpi()
         {
             if (GetCurrentAwareness() == WinAPI.PROCESS_DPI_AWARENESS.PROCESS_DPI_UNAWARE)
-            {
-                var dpi = GetComparitiveMonitorDpiScale(Screen.PrimaryScreen) * 96;
-                return new Dpi((int)dpi, (int)dpi);
-            }
-            else
-            {
-                return SystemDpi;
-            }
+                return GetComparativeMonitorDpi(Screen.PrimaryScreen);
+
+            return SystemDpi;
         }
 
         internal static WinAPI.PROCESS_DPI_AWARENESS GetCurrentAwareness()
@@ -221,20 +216,18 @@ namespace ScreenVersusWpf
                 }
             }
 
-            var comparison = GetComparitiveMonitorDpiScale(Screen.PrimaryScreen);
-            if (!comparison.Equals(1))
+            var comparison = GetComparativeMonitorDpi(Screen.PrimaryScreen);
+            if (!comparison.Equals(Dpi.Default))
                 return WinAPI.PROCESS_DPI_AWARENESS.PROCESS_DPI_UNAWARE;
 
             // if the system dpi is not 96/96 then we are aware.
             if (!SystemDpi.Equals(Dpi.Default))
                 return WinAPI.PROCESS_DPI_AWARENESS.PROCESS_SYSTEM_DPI_AWARE;
 
-
-
             return WinAPI.PROCESS_DPI_AWARENESS.PROCESS_DPI_UNAWARE;
         }
 
-        internal static double GetComparitiveMonitorDpiScale(Screen screen)
+        internal static Dpi GetComparativeMonitorDpi(Screen screen)
         {
             int cxLogical = (screen.Bounds.Right - screen.Bounds.Left);
             int cyLogical = (screen.Bounds.Bottom - screen.Bounds.Top);
@@ -252,10 +245,7 @@ namespace ScreenVersusWpf
             double horzScale = ((double)cxPhysical / (double)cxLogical);
             double vertScale = ((double)cyPhysical / (double)cyLogical);
 
-            if (!horzScale.Equals(vertScale))
-                throw new NotSupportedException("System returned Scale-X value that is not equal to Scale-Y, this is not supported.");
-
-            return horzScale;
+            return new Dpi((int)(horzScale * 96), (int)(vertScale * 96));
         }
 
         internal static bool Equals(this double one, double two, double tolerance = .00001)
